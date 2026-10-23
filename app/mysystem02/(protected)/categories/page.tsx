@@ -7,7 +7,7 @@ import {
   updateCategory,
   deleteCategory,
 } from "@/lib/firestore";
-import { slugify } from "@/lib/formatters";
+import { slugify, normalizeImageUrl } from "@/lib/formatters";
 import { Icon } from "@/components/ui/Icon";
 import { SafeImage } from "@/components/ui/SafeImage";
 import type { Category } from "@/types";
@@ -52,19 +52,21 @@ export default function AdminCategoriesPage() {
     if (!name.trim()) return;
 
     try {
+      const cleanCover = normalizeImageUrl(coverImage) || undefined;
+
       if (editingId) {
         await updateCategory(editingId, {
           name: name.trim(),
           slug: slug.trim(),
           order: Number(order),
-          coverImage: coverImage.trim() || undefined,
+          coverImage: cleanCover,
         });
       } else {
         await createCategory({
           name: name.trim(),
           slug: slug.trim(),
           order: Number(order),
-          coverImage: coverImage.trim() || undefined,
+          coverImage: cleanCover,
         });
       }
 

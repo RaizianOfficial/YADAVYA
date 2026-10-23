@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { getSiteSettings, updateSiteSettings } from "@/lib/firestore";
 import { SafeImage } from "@/components/ui/SafeImage";
+import { normalizeImageUrl } from "@/lib/formatters";
 import type { SiteSettings } from "@/types";
 
 export default function AdminSettingsPage() {
@@ -33,7 +34,19 @@ export default function AdminSettingsPage() {
     setSuccess(false);
 
     try {
-      await updateSiteSettings(settings);
+      const cleaned: SiteSettings = {
+        ...settings,
+        hero: {
+          ...settings.hero,
+          imageUrl: normalizeImageUrl(settings.hero?.imageUrl),
+        },
+        editorialBanner: {
+          ...settings.editorialBanner,
+          imageUrl: normalizeImageUrl(settings.editorialBanner?.imageUrl),
+        },
+      };
+      await updateSiteSettings(cleaned);
+      setSettings(cleaned);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (e) {

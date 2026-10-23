@@ -1,8 +1,15 @@
 import { z } from "zod";
+import { normalizeImageUrl } from "./formatters";
 
-export const imageUrlSchema = z.string().url("Must be a valid URL").refine(
-  (url) => url.startsWith("https://") || url.startsWith("http://"),
-  { message: "URL must start with https:// or http://" }
+export const imageUrlSchema = z.preprocess(
+  (val) => (typeof val === "string" ? normalizeImageUrl(val) : val),
+  z
+    .string()
+    .min(1, "Image URL is required")
+    .url("Must be a valid URL")
+    .refine((url) => url.startsWith("https://") || url.startsWith("http://"), {
+      message: "URL must start with https:// or http://",
+    })
 );
 
 export const productSizeSchema = z.object({

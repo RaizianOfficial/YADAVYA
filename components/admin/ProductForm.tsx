@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { productSchema } from "@/lib/validators";
-import { slugify } from "@/lib/formatters";
+import { slugify, normalizeImageUrl } from "@/lib/formatters";
 import { ImageUrlsEditor } from "./ImageUrlsEditor";
 import { MiniProductPreview } from "./MiniProductPreview";
 import { createCategory, getCategories } from "@/lib/firestore";
@@ -152,8 +152,13 @@ export function ProductForm({
     e.preventDefault();
     setErrors({});
 
-    // Filter valid images
-    const validImages = images.filter((img) => img.url.trim().length > 0);
+    // Filter and normalize valid images
+    const validImages = images
+      .map((img) => ({
+        url: normalizeImageUrl(img.url),
+        alt: img.alt?.trim() || "",
+      }))
+      .filter((img) => img.url.length > 0);
 
     const parsedTags = tagsInput
       .split(",")

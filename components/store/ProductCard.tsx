@@ -20,8 +20,9 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0]?.label || "M");
   const { addItem } = useCartStore();
 
-  const coverImage = product.images?.[0]?.url || "";
-  const hoverImage = product.images?.[1]?.url || "";
+  const validImages = product.images?.filter((img) => img?.url?.trim()) || [];
+  const coverImage = validImages[0]?.url || "";
+  const hoverImage = validImages[1]?.url || "";
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -53,14 +54,15 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           href={`/product/${product.slug}`}
           className="relative aspect-[4/5] w-full bg-surface overflow-hidden block touch-manipulation"
         >
-          <div className="w-full h-full transform transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]">
+          <div className="w-full h-full transform transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] relative">
             {/* Cover Image */}
             <SafeImage
               src={coverImage}
-              alt={product.images?.[0]?.alt || product.name}
+              alt={validImages[0]?.alt || product.name}
               fill
               priority={priority}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              containerClassName="absolute inset-0"
               className={`object-cover transition-opacity duration-700 ${
                 isHovered && hoverImage ? "opacity-0" : "opacity-100"
               }`}
@@ -70,10 +72,11 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             {hoverImage && (
               <SafeImage
                 src={hoverImage}
-                alt={product.images?.[1]?.alt || `${product.name} alternate view`}
+                alt={validImages[1]?.alt || `${product.name} alternate view`}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className={`object-cover transition-opacity duration-700 absolute inset-0 ${
+                containerClassName="absolute inset-0"
+                className={`object-cover transition-opacity duration-700 ${
                   isHovered ? "opacity-100" : "opacity-0"
                 }`}
               />

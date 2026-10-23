@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { normalizeImageUrl } from "@/lib/formatters";
 import type { ProductImage } from "@/types";
 
 interface ImageUrlsEditorProps {
@@ -15,7 +15,14 @@ function ImageRowPreview({ url }: { url: string }) {
   const [hasError, setHasError] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  if (!url) {
+  const cleanUrl = normalizeImageUrl(url);
+
+  useEffect(() => {
+    setHasError(false);
+    setLoaded(false);
+  }, [cleanUrl]);
+
+  if (!cleanUrl) {
     return (
       <div className="w-14 h-16 bg-surface border border-line flex items-center justify-center shrink-0">
         <span className="text-[9px] text-ink-soft/40 tracking-wider">Empty</span>
@@ -33,19 +40,19 @@ function ImageRowPreview({ url }: { url: string }) {
 
   return (
     <div className="w-14 h-16 bg-surface border border-line relative overflow-hidden shrink-0">
-      <Image
-        src={url}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={cleanUrl}
         alt="Preview"
-        fill
-        sizes="56px"
-        className={`object-cover transition-opacity duration-300 ${
+        referrerPolicy="no-referrer"
+        className={`w-full h-full object-cover transition-opacity duration-300 ${
           loaded ? "opacity-100" : "opacity-0"
         }`}
         onLoad={() => setLoaded(true)}
         onError={() => setHasError(true)}
       />
       {!loaded && (
-        <div className="absolute inset-0 bg-surface flex items-center justify-center">
+        <div className="absolute inset-0 bg-surface flex items-center justify-center pointer-events-none">
           <span className="text-[8px] text-ink-soft/40 animate-pulse">...</span>
         </div>
       )}
@@ -63,8 +70,20 @@ export function ImageUrlsEditor({
 
   const handleUrlChange = (index: number, newUrl: string) => {
     const updated = [...images];
-    updated[index] = { ...updated[index], url: newUrl.trim() };
+    updated[index] = { ...updated[index], url: newUrl };
     onChange(updated);
+  };
+
+  const handleUrlBlur = (index: number) => {
+    const targetUrl = images[index]?.url;
+    if (targetUrl) {
+      const normalized = normalizeImageUrl(targetUrl);
+      if (normalized !== targetUrl) {
+        const updated = [...images];
+        updated[index] = { ...updated[index], url: normalized };
+        onChange(updated);
+      }
+    }
   };
 
   const handleAltChange = (index: number, newAlt: string) => {
@@ -102,7 +121,7 @@ export function ImageUrlsEditor({
   const handleBatchImport = () => {
     const lines = batchText
       .split("\n")
-      .map((l) => l.trim())
+      .map((l) => normalizeImageUrl(l))
       .filter((l) => l.length > 0);
 
     const validUrls = lines.map((url) => ({ url, alt: "" }));
@@ -176,7 +195,7 @@ export function ImageUrlsEditor({
       <div className="space-y-3">
         {images.map((img, index) => (
           <div
-            key={index}
+            key={`${index}-${img.url.slice(0, 30)}`}
             className={`p-3 bg-white border flex flex-col sm:flex-row items-start sm:items-center gap-3 ${
               index === 0 ? "border-ink" : "border-line"
             }`}
@@ -192,6 +211,7 @@ export function ImageUrlsEditor({
                   placeholder="https://..."
                   value={img.url}
                   onChange={(e) => handleUrlChange(index, e.target.value)}
+                  onBlur={() => handleUrlBlur(index)}
                   className="flex-1 px-3 py-1.5 text-xs bg-white border border-line focus:border-ink outline-none"
                 />
                 {index === 0 && (

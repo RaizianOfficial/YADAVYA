@@ -24,8 +24,9 @@ export function MiniProductPreview({
 }: MiniProductPreviewProps) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const coverUrl = images[0]?.url || "";
-  const hoverUrl = images[1]?.url || "";
+  const validImages = images?.filter((img) => img?.url?.trim()) || [];
+  const coverUrl = validImages[0]?.url || "";
+  const hoverUrl = validImages[1]?.url || "";
 
   return (
     <div className="border border-line bg-white p-4 space-y-3">
@@ -62,6 +63,7 @@ export function MiniProductPreview({
             src={coverUrl}
             alt={name || "Preview"}
             fill
+            containerClassName="absolute inset-0"
             className={`object-cover transition-opacity duration-500 ${
               isHovered && hoverUrl ? "opacity-0" : "opacity-100"
             }`}
@@ -71,7 +73,8 @@ export function MiniProductPreview({
               src={hoverUrl}
               alt={`${name} alternative`}
               fill
-              className={`object-cover transition-opacity duration-500 absolute inset-0 ${
+              containerClassName="absolute inset-0"
+              className={`object-cover transition-opacity duration-500 ${
                 isHovered ? "opacity-100" : "opacity-0"
               }`}
             />

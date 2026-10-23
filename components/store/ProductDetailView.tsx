@@ -35,7 +35,8 @@ export function ProductDetailView({
 
   const { addItem } = useCartStore();
 
-  const images = product.images?.length > 0 ? product.images : [{ url: "", alt: product.name }];
+  const validImages = product.images?.filter((img) => img?.url?.trim()) || [];
+  const images = validImages.length > 0 ? validImages : [{ url: "", alt: product.name }];
   const currentSizeObj = product.sizes?.find((s) => s.label === selectedSize);
   const isOutOfStock = !currentSizeObj || currentSizeObj.stock <= 0;
 
