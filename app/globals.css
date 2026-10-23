@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #FFFFFF;
+  --surface: #F6F9FC;
+  --blue-50: #EEF5FB;
+  --blue-100: #DCEBF7;
+  --blue-300: #A9CBE8;
+  --blue-500: #6FA8D6;
+  --ink: #0E1A24;
+  --ink-soft: #5B6B78;
+  --line: #E4EAF0;
+  --ease-yadavya: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-blue-50: var(--blue-50);
+  --color-blue-100: var(--blue-100);
+  --color-blue-300: var(--blue-300);
+  --color-blue-500: var(--blue-500);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --font-sans: var(--font-instrument-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  border-color: var(--line);
+  outline-color: var(--blue-300);
+}
+
+html {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Hairline borders */
+.border-hairline {
+  border-width: 1px;
+  border-color: var(--line);
+}
+
+.border-hairline-t {
+  border-top-width: 1px;
+  border-top-color: var(--line);
+}
+
+.border-hairline-b {
+  border-bottom-width: 1px;
+  border-bottom-color: var(--line);
+}
+
+.border-hairline-l {
+  border-left-width: 1px;
+  border-left-color: var(--line);
+}
+
+.border-hairline-r {
+  border-right-width: 1px;
+  border-right-color: var(--line);
+}
+
+/* Tabular figures for prices */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbar - unobtrusive */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--blue-300);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
