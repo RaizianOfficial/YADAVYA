@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   description: "Explore the full collection of minimal luxury garments by YADAVYA.",
 };
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface ShopPageProps {
   searchParams: Promise<{

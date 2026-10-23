@@ -7,7 +7,8 @@ import { BrandStatement } from "@/components/store/home/BrandStatement";
 import { AllProductsGrid } from "@/components/store/home/AllProductsGrid";
 import { EditorialBanner } from "@/components/store/home/EditorialBanner";
 
-export const revalidate = 60; // ISR revalidation
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function HomePage() {
   const [settings, products, categories] = await Promise.all([

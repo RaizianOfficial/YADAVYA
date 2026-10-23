@@ -8,7 +8,8 @@ import {
 } from "@/lib/firestore";
 import { ProductDetailView } from "@/components/store/ProductDetailView";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface ProductPageProps {
   params: Promise<{

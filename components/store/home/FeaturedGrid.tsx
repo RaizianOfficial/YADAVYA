@@ -12,7 +12,8 @@ interface FeaturedGridProps {
 }
 
 export function FeaturedGrid({ products }: FeaturedGridProps) {
-  const featured = products.filter((p) => p.featured).slice(0, 4);
+  const featuredProducts = products.filter((p) => p.featured);
+  const featured = (featuredProducts.length > 0 ? featuredProducts : products).slice(0, 4);
 
   return (
     <section className="py-14 sm:py-20 md:py-28 max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12">

@@ -81,33 +81,43 @@ export async function getProducts(options?: {
   limitCount?: number;
 }): Promise<Product[]> {
   try {
+    // Only use single field filter in Firestore query to avoid requiring composite indexes
     const constraints: QueryConstraint[] = [];
-
     if (options?.status) {
       constraints.push(where("status", "==", options.status));
     }
-    if (options?.featured !== undefined) {
-      constraints.push(where("featured", "==", options.featured));
-    }
-    if (options?.categoryId) {
-      constraints.push(where("categoryId", "==", options.categoryId));
-    }
-    constraints.push(orderBy("createdAt", "desc"));
 
-    if (options?.limitCount) {
-      constraints.push(limit(options.limitCount));
-    }
+    const q = constraints.length > 0
+      ? query(collection(db, "products"), ...constraints)
+      : query(collection(db, "products"));
 
-    const q = query(collection(db, "products"), ...constraints);
     const snapshot = await getDocs(q);
 
-    return snapshot.docs.map((d) => ({
+    let list = snapshot.docs.map((d) => ({
       id: d.id,
       ...(d.data() as Omit<Product, "id">),
     }));
+
+    if (options?.status) {
+      list = list.filter((p) => p.status === options.status);
+    }
+    if (options?.featured !== undefined) {
+      list = list.filter((p) => p.featured === options.featured);
+    }
+    if (options?.categoryId) {
+      list = list.filter((p) => p.categoryId === options.categoryId);
+    }
+
+    // Sort in memory by newest first
+    list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    if (options?.limitCount) {
+      list = list.slice(0, options.limitCount);
+    }
+
+    return list;
   } catch (error) {
     console.error("Error fetching products:", error);
-    // In case composite index is missing or offline
     try {
       const qFallback = query(collection(db, "products"));
       const snapshot = await getDocs(qFallback);
@@ -129,7 +139,8 @@ export async function getProducts(options?: {
         list = list.slice(0, options.limitCount);
       }
       return list;
-    } catch {
+    } catch (fallbackError) {
+      console.error("Fallback error fetching products:", fallbackError);
       return [];
     }
   }
@@ -174,6 +185,7 @@ export async function createProduct(
   const now = Date.now();
   const product: Product = {
     ...data,
+    status: data.status || "published",
     id: newDocRef.id,
     createdAt: now,
     updatedAt: now,
