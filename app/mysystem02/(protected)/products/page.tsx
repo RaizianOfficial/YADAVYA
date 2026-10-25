@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getProducts, getCategories, deleteProduct, updateProduct } from "@/lib/firestore";
-import { formatPrice } from "@/lib/formatters";
+import { formatPrice, slugify } from "@/lib/formatters";
 import { Icon } from "@/components/ui/Icon";
 import { SafeImage } from "@/components/ui/SafeImage";
 import type { Product, Category } from "@/types";
@@ -206,9 +206,15 @@ export default function AdminProductsPage() {
                         >
                           {product.name}
                         </Link>
-                        <span className="text-[11px] text-ink-soft block font-normal">
-                          /{product.slug}
-                        </span>
+                        <Link
+                          href={`/product/${product.slug ? slugify(product.slug) : product.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-ink-soft hover:text-blue-500 inline-block font-normal mt-0.5"
+                          title="Open live product page"
+                        >
+                          /{product.slug || product.id} ↗
+                        </Link>
                       </td>
 
                       <td className="py-3 px-4 tabular-nums text-ink font-medium">

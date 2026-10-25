@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getProducts } from "@/lib/firestore";
+import { slugify } from "@/lib/formatters";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -40,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const products = await getProducts({ status: "published" });
     const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
-      url: `${baseUrl}/product/${p.slug}`,
+      url: `${baseUrl}/product/${p.slug ? slugify(p.slug) : p.id}`,
       lastModified: new Date(p.updatedAt || p.createdAt || Date.now()),
       changeFrequency: "weekly",
       priority: 0.8,

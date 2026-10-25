@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "@/store/useCartStore";
 import { Icon } from "@/components/ui/Icon";
 import { SafeImage } from "@/components/ui/SafeImage";
-import { formatPrice } from "@/lib/formatters";
+import { formatPrice, slugify } from "@/lib/formatters";
 
 export function BagDrawer() {
   const {
@@ -112,7 +112,7 @@ export function BagDrawer() {
                         <div>
                           <div className="flex justify-between items-start">
                             <Link
-                              href={`/product/${item.slug}`}
+                              href={`/product/${item.slug ? slugify(item.slug) : item.productId}`}
                               onClick={closeCart}
                               className="text-xs uppercase font-medium text-ink hover:text-blue-500 transition-colors tracking-wider"
                             >

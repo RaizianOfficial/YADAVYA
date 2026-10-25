@@ -13,6 +13,7 @@ import {
   type QueryConstraint,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { slugify } from "./formatters";
 import type {
   Product,
   Category,
@@ -146,21 +147,86 @@ export async function getProducts(options?: {
   }
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
+export async function getProductBySlug(rawSlug: string): Promise<Product | null> {
+  if (!rawSlug) return null;
+
+  const decoded = decodeURIComponent(rawSlug).trim();
+  const clean = slugify(decoded);
+
+  // 1. Direct query with cleanSlug AND status == "published"
+  const candidateSlugs = Array.from(new Set([clean, decoded, rawSlug])).filter(Boolean);
+
+  for (const s of candidateSlugs) {
+    try {
+      const q = query(
+        collection(db, "products"),
+        where("slug", "==", s),
+        where("status", "==", "published"),
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const docData = snapshot.docs[0];
+        return { id: docData.id, ...(docData.data() as Omit<Product, "id">) };
+      }
+    } catch {
+      // Continue to next check
+    }
+
+    try {
+      const qAny = query(
+        collection(db, "products"),
+        where("slug", "==", s),
+        limit(1)
+      );
+      const snapshot = await getDocs(qAny);
+      if (!snapshot.empty) {
+        const docData = snapshot.docs[0];
+        return { id: docData.id, ...(docData.data() as Omit<Product, "id">) };
+      }
+    } catch {
+      // Continue
+    }
+  }
+
+  // 2. Direct document ID lookup
+  for (const s of candidateSlugs) {
+    try {
+      const docRef = doc(db, "products", s);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...(docSnap.data() as Omit<Product, "id">) };
+      }
+    } catch {
+      // Continue
+    }
+  }
+
+  // 3. Fallback: Retrieve all published products and find in memory
+  // This guarantees finding the product regardless of encoding, casing, or index quirks
   try {
-    const q = query(
-      collection(db, "products"),
-      where("slug", "==", slug),
-      limit(1)
-    );
-    const snapshot = await getDocs(q);
-    if (!snapshot.empty) {
-      const docData = snapshot.docs[0];
-      return { id: docData.id, ...(docData.data() as Omit<Product, "id">) };
+    const all = await getProducts();
+    const found = all.find((p) => {
+      const pSlug = p.slug?.trim() || "";
+      const pSlugified = slugify(pSlug);
+      const pNameSlug = slugify(p.name || "");
+      return (
+        p.id === decoded ||
+        p.id === rawSlug ||
+        pSlug === decoded ||
+        pSlug === clean ||
+        pSlug.toLowerCase() === clean ||
+        pSlugified === clean ||
+        pNameSlug === clean
+      );
+    });
+    if (found) {
+      return found;
     }
   } catch (error) {
-    console.error("Error fetching product by slug:", error);
+    console.error("Fallback search failed in getProductBySlug:", error);
   }
+
   return null;
 }
 
@@ -183,8 +249,10 @@ export async function createProduct(
   const colRef = collection(db, "products");
   const newDocRef = doc(colRef);
   const now = Date.now();
+  const cleanSlug = slugify(data.slug || data.name) || newDocRef.id;
   const product: Product = {
     ...data,
+    slug: cleanSlug,
     status: data.status || "published",
     id: newDocRef.id,
     createdAt: now,
@@ -199,10 +267,11 @@ export async function updateProduct(
   data: Partial<Product>
 ): Promise<void> {
   const docRef = doc(db, "products", id);
-  await updateDoc(docRef, {
-    ...data,
-    updatedAt: Date.now(),
-  });
+  const updateData: Partial<Product> = { ...data, updatedAt: Date.now() };
+  if (data.slug) {
+    updateData.slug = slugify(data.slug);
+  }
+  await updateDoc(docRef, updateData);
 }
 
 export async function deleteProduct(id: string): Promise<void> {

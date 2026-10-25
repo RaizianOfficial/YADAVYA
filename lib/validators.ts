@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { normalizeImageUrl } from "./formatters";
+import { normalizeImageUrl, slugify } from "./formatters";
 
 export const imageUrlSchema = z.preprocess(
   (val) => (typeof val === "string" ? normalizeImageUrl(val) : val),
@@ -29,7 +29,10 @@ export const productImageSchema = z.object({
 
 export const productSchema = z.object({
   name: z.string().min(2, "Product name is required (at least 2 characters)"),
-  slug: z.string().min(2, "Slug is required"),
+  slug: z.preprocess(
+    (val) => (typeof val === "string" ? slugify(val) : val),
+    z.string().min(2, "Slug is required")
+  ),
   price: z.coerce.number().positive("Price must be greater than 0"),
   compareAtPrice: z.coerce.number().optional().nullable(),
   shortDescription: z.string().min(5, "Short description is required"),

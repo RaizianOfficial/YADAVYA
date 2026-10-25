@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@/components/ui/Icon";
 import { SafeImage } from "@/components/ui/SafeImage";
-import { formatPrice } from "@/lib/formatters";
+import { formatPrice, slugify } from "@/lib/formatters";
 import { getProducts } from "@/lib/firestore";
 import type { Product } from "@/types";
 
@@ -144,7 +144,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 {filteredProducts.map((p) => (
                   <Link
                     key={p.id}
-                    href={`/product/${p.slug}`}
+                    href={`/product/${p.slug ? slugify(p.slug) : p.id}`}
                     onClick={onClose}
                     className="flex items-center gap-5 py-4 group hover:bg-surface/50 px-2 transition-colors"
                   >

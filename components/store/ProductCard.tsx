@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { SafeImage } from "@/components/ui/SafeImage";
-import { formatPrice } from "@/lib/formatters";
+import { formatPrice, slugify } from "@/lib/formatters";
 import { Icon } from "@/components/ui/Icon";
 import { useCartStore } from "@/store/useCartStore";
 import type { Product } from "@/types";
@@ -23,6 +23,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const validImages = product.images?.filter((img) => img?.url?.trim()) || [];
   const coverImage = validImages[0]?.url || "";
   const hoverImage = validImages[1]?.url || "";
+  const productSlug = product.slug ? slugify(product.slug) : product.id;
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -30,7 +31,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     addItem(
       {
         productId: product.id,
-        slug: product.slug,
+        slug: productSlug,
         name: product.name,
         price: product.price,
         size: selectedSize,
@@ -51,7 +52,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       >
         {/* Image Container (4:5 Aspect Ratio, calm whitespace, no shadows) */}
         <Link
-          href={`/product/${product.slug}`}
+          href={`/product/${productSlug}`}
           className="relative aspect-[4/5] w-full bg-surface overflow-hidden block touch-manipulation"
         >
           <div className="w-full h-full transform transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] relative">
@@ -116,7 +117,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         <div className="pt-2.5 sm:pt-3.5 pb-1 flex flex-col justify-between">
           <div className="space-y-0.5 sm:space-y-1">
             <Link
-              href={`/product/${product.slug}`}
+              href={`/product/${productSlug}`}
               className="block group/link touch-manipulation"
             >
               <h3 className="text-[11px] sm:text-xs uppercase font-medium tracking-[0.14em] sm:tracking-[0.16em] text-ink truncate relative inline-block">
@@ -255,7 +256,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
                       Add to Bag
                     </button>
                     <Link
-                      href={`/product/${product.slug}`}
+                      href={`/product/${productSlug}`}
                       onClick={() => setShowQuickModal(false)}
                       className="block text-center text-[11px] uppercase tracking-wider text-ink-soft hover:text-ink py-1 touch-manipulation"
                     >

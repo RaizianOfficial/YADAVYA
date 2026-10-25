@@ -49,7 +49,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     getSiteSettings(),
   ]);
 
-  if (!product || product.status !== "published") {
+  if (!product || product.status === "draft") {
     notFound();
   }
 

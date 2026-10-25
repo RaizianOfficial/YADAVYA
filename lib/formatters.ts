@@ -16,12 +16,13 @@ export function formatPrice(amount: number): string {
  * Generate URL-friendly slug from a string
  */
 export function slugify(text: string): string {
+  if (!text) return "";
   return text
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, "-") // Replace spaces with -
-    .replace(/[^\w-]+/g, "") // Remove all non-word chars
+    .replace(/['"]/g, "") // Remove quotes
+    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric chars with -
     .replace(/--+/g, "-") // Replace multiple - with single -
     .replace(/^-+/, "") // Trim - from start of text
     .replace(/-+$/, ""); // Trim - from end of text

@@ -166,8 +166,8 @@ export function ProductForm({
       .filter((t) => t.length > 0);
 
     const formData = {
-      name,
-      slug,
+      name: name.trim(),
+      slug: slugify(slug || name),
       price: Number(price),
       compareAtPrice: compareAtPrice ? Number(compareAtPrice) : null,
       shortDescription,
